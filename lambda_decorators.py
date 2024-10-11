@@ -144,8 +144,9 @@ just built a few useful decorators and utilities to build them.
 
 import json
 import logging
+from functools import update_wrapper, wraps
+
 import boto3
-from functools import wraps, update_wrapper
 
 try:
     import asyncio
@@ -358,24 +359,24 @@ def async_handler(handler):
 
 def cors_headers(handler_or_origin=None, origin=None, credentials=False):
     """
-Automatically injects ``Access-Control-Allow-Origin`` headers to http
-responses. Also optionally adds ``Access-Control-Allow-Credentials: True`` if
-called with ``credentials=True``
+    Automatically injects ``Access-Control-Allow-Origin`` headers to http
+    responses. Also optionally adds ``Access-Control-Allow-Credentials: True`` if
+    called with ``credentials=True``
 
-Usage::
+    Usage::
 
-    >>> from lambda_decorators import cors_headers
-    >>> @cors_headers
-    ... def hello(example, context):
-    ...     return {'body': 'foobar'}
-    >>> hello({}, object())
-    {'body': 'foobar', 'headers': {'Access-Control-Allow-Origin': '*'}}
-    >>> # or with custom domain
-    >>> @cors_headers(origin='https://example.com', credentials=True)
-    ... def hello_custom_origin(example, context):
-    ...     return {'body': 'foobar'}
-    >>> hello_custom_origin({}, object())
-    {'body': 'foobar', 'headers': {'Access-Control-Allow-Origin': 'https://example.com', 'Access-Control-Allow-Credentials': True}}
+        >>> from lambda_decorators import cors_headers
+        >>> @cors_headers
+        ... def hello(example, context):
+        ...     return {'body': 'foobar'}
+        >>> hello({}, object())
+        {'body': 'foobar', 'headers': {'Access-Control-Allow-Origin': '*'}}
+        >>> # or with custom domain
+        >>> @cors_headers(origin='https://example.com', credentials=True)
+        ... def hello_custom_origin(example, context):
+        ...     return {'body': 'foobar'}
+        >>> hello_custom_origin({}, object())
+        {'body': 'foobar', 'headers': {'Access-Control-Allow-Origin': 'https://example.com', 'Access-Control-Allow-Credentials': True}}
     """
     if isinstance(handler_or_origin, str) and origin is not None:
         raise TypeError(
@@ -410,24 +411,24 @@ Usage::
 
 def dump_json_body(handler_or_none=None, **json_dumps_kwargs):
     """
-Automatically serialize response bodies with json.dumps.
+    Automatically serialize response bodies with json.dumps.
 
-Returns a 500 error if the response cannot be serialized
+    Returns a 500 error if the response cannot be serialized
 
-Usage::
+    Usage::
 
-  >>> from lambda_decorators import dump_json_body
-  >>> @dump_json_body
-  ... def handler(event, context):
-  ...     return {'statusCode': 200, 'body': {'hello': 'world'}}
-  >>> handler({}, object())
-  {'statusCode': 200, 'body': '{"hello": "world"}'}
-  >>> from decimal import Decimal
-  >>> @dump_json_body(default=str)
-  ... def handler(event, context):
-  ...     return {'statusCode': 200, 'body': {'hello': Decimal('4.2')}}
-  >>> handler({}, object())
-  {'statusCode': 200, 'body': '{"hello": "4.2"}'}
+      >>> from lambda_decorators import dump_json_body
+      >>> @dump_json_body
+      ... def handler(event, context):
+      ...     return {'statusCode': 200, 'body': {'hello': 'world'}}
+      >>> handler({}, object())
+      {'statusCode': 200, 'body': '{"hello": "world"}'}
+      >>> from decimal import Decimal
+      >>> @dump_json_body(default=str)
+      ... def handler(event, context):
+      ...     return {'statusCode': 200, 'body': {'hello': Decimal('4.2')}}
+      >>> handler({}, object())
+      {'statusCode': 200, 'body': '{"hello": "4.2"}'}
     """
 
     if handler_or_none is not None and len(json_dumps_kwargs) > 0:
@@ -460,36 +461,36 @@ Usage::
 
 def json_http_resp(handler_or_none=None, **json_dumps_kwargs):
     """
-Automatically serialize return value to the body of a successfull HTTP
-response.
+    Automatically serialize return value to the body of a successfull HTTP
+    response.
 
-Returns a 500 error if the response cannot be serialized
+    Returns a 500 error if the response cannot be serialized
 
-Usage::
+    Usage::
 
-    >>> from lambda_decorators import json_http_resp
-    >>> @json_http_resp
-    ... def handler(event, context):
-    ...     return {'hello': 'world'}
-    >>> handler({}, object())
-    {'statusCode': 200, 'body': '{"hello": "world"}'}
-    >>> @json_http_resp
-    ... def err_handler(event, context):
-    ...     raise Exception('foobar')
-    >>> err_handler({}, object())
-    {'statusCode': 500, 'body': 'foobar'}
-    >>> from decimal import Decimal
-    >>> @json_http_resp(default=str)
-    ... def handler(event, context):
-    ...     return {'hello': Decimal('4.2')}
-    >>> handler({}, object())
-    {'statusCode': 200, 'body': '{"hello": "4.2"}'}
+        >>> from lambda_decorators import json_http_resp
+        >>> @json_http_resp
+        ... def handler(event, context):
+        ...     return {'hello': 'world'}
+        >>> handler({}, object())
+        {'statusCode': 200, 'body': '{"hello": "world"}'}
+        >>> @json_http_resp
+        ... def err_handler(event, context):
+        ...     raise Exception('foobar')
+        >>> err_handler({}, object())
+        {'statusCode': 500, 'body': 'foobar'}
+        >>> from decimal import Decimal
+        >>> @json_http_resp(default=str)
+        ... def handler(event, context):
+        ...     return {'hello': Decimal('4.2')}
+        >>> handler({}, object())
+        {'statusCode': 200, 'body': '{"hello": "4.2"}'}
 
-in this example, the decorated handler returns:
+    in this example, the decorated handler returns:
 
-.. code:: python
+    .. code:: python
 
-    {'statusCode': 200, 'body': '{"hello": "world"}'}
+        {'statusCode': 200, 'body': '{"hello": "world"}'}
     """
 
     if handler_or_none is not None and len(json_dumps_kwargs) > 0:
@@ -504,18 +505,16 @@ in this example, the decorated handler returns:
                 try:
                     resp = handler(event, context)
                     if isinstance(resp, dict):
-                        status = resp.pop('statusCode', 200)
+                        status = resp.pop("statusCode", 200)
                     else:
                         status = 200
                     if isinstance(resp, dict):
-                        headers = resp.pop('headers', None)
+                        headers = resp.pop("headers", None)
                     else:
                         headers = None
                     http_resp = {
                         "statusCode": status,
-                        "body": json.dumps(
-                            resp, **json_dumps_kwargs
-                        ),
+                        "body": json.dumps(resp, **json_dumps_kwargs),
                     }
                     if headers:
                         http_resp["headers"] = headers

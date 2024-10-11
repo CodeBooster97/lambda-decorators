@@ -3,6 +3,15 @@
 =========================
 |Version|_ |Docs|_ |Build|_ |SayThanks|_
 
+Attention: This is a fork of the original lambda-decorators package.
+
+The purpose of this fork is to eliminate the need for boto3 in the requirements.txt file. 
+This is useful when you are using the lambda-decorators in a lambda function that is already running in an environment that has boto3 installed. 
+This fork will not install boto3 as a dependency when you install lambda-decorators.
+
+
+
+
 A collection of useful decorators for making AWS Lambda handlers
 
 ``lambda_decorators`` is a collection of useful decorators for writing Python
